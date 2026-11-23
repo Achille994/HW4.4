@@ -21,4 +21,31 @@ The goal for this project was to statistically analyze HW4.3 and create data vis
 6. Review and submit the PDF file.
 
 # Plan for repository
+## Goals:
+The goal is to create a repository for my  #HW4.3 files.
+- Utilize the branches,commits, issues and other github features.
+- Organizing the project files.
+- Keep track of changes while updating the branches.
 
+  ## Needs:
+  - Github
+  - GitHub account
+  - A repository
+  - HW4.3 PDF file
+  - HW4.3 quarto file
+  - README file
+  - PLAN file
+  - The main branch
+  - the development branch
+  - the 2 issues
+ 
+    ##Steps:
+    1. first we created the new repository for my homework.
+    2. We provide a description for the repository using the README file.
+    3. We create the PLAN file
+    4. Make changes using commits
+    5. We first upload the Quarto file to the dev branch specifically
+    6. We also upload the pdf
+    7. We then create a pull request the combine the development branch into the main branch
+    8. We close the issues after we have completed them.
+    9. We make sure all the files are updated and are in the main branch.
