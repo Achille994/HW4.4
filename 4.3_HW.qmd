@@ -1,0 +1,627 @@
+---
+title: "4.3HW- Reproducible data analysis"
+author: "Achille Shyaka"
+date: today
+format:
+  pdf:
+    toc: true
+execute:
+  echo: false
+  warning: false
+  message: false
+    
+---
+
+# Diamonds Statistics table
+
+## Diamond length by based on clarity
+This table is basically going to generate the descriptive statistics for our diamond length based on their clarity levels. We make sure to filter out diamonds with any 0 dimensions and our statistics generated include the 4 quintiles, the median, mean, standard deviation, and the frequencies.
+```{r}
+#| label: tbl-diamond-length
+#| tbl-cap: "Statistics of The Diamond Length based on Clarity"
+#| echo: false
+
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+data(diamonds)
+
+# Remove diamonds with zero physical dimensions ----
+newDiamonds <- diamonds |>
+  filter(x != 0, y != 0, z != 0) |>
+  select(clarity, x, y, z)
+
+# Calculate length statistics by clarity ----
+lengthStats <- newDiamonds |>
+  group_by(clarity) |>
+  summarise(
+    Frequency = length(x),
+    Min = min(x),
+    Q1 = quantile(x, 0.20),
+    Q2 = quantile(x, 0.40),
+    Median = median(x),
+    Q3 = quantile(x, 0.60),
+    Q4 = quantile(x, 0.80),
+    Max = max(x),
+    Mean = mean(x),
+    SD = sd(x),
+    .groups = "drop"
+  )
+
+# Display formatted statistics table ----
+lengthStats |>
+  kable(
+    digits = 2,
+    col.names = c(
+      "Clarity", "Frequency", "0%", "20%",
+      "40%", "Median", "60%", "80%",
+      "100%", "Mean", "SD"
+    ),
+    booktabs = TRUE
+  )
+```
+Some takeaways from this table are the mean diamond length varies through the different clarity levels. We can see that the l1 diamonds have the highest mean length and VVS1 diamonds have the lowest mean length. Accross most of the statistic columns the l1 diamonds have the highest values. We can also note that the standard deviations range from 0.84- 1.08 millimeters. This tells us that the diamond lengths  variability are similar across all the clarity levels.
+
+## Diamond width based on clarity
+This second table is responsible for presenting the statistics for the diamond width in millimeters in all the clarity levels. We used the cleaned data set from diamond length keep the table consistent.
+```{r}
+#| label: tbl-diamond-width
+#| tbl-cap: "Descriptive Statistics of Diamond Width by Clarity"
+#| echo: false
+
+# Calculating width statistics by clarity ----
+widthStats <- newDiamonds |>
+  group_by(clarity) |>
+  summarise(
+    Frequency = length(y),
+    Min = min(y),
+    Quintile1 = quantile(y, 0.20),
+    Quintile2 = quantile(y, 0.40),
+    Median = median(y),
+    Quintile3 = quantile(y, 0.60),
+    Quintile4 = quantile(y, 0.80),
+    Max = max(y),
+    Mean = mean(y),
+    SD = sd(y),
+    .groups = "drop"
+  )
+
+# Presents the formatted width statistics table ----
+widthStats |>
+  kable(
+    digits = 2,
+    col.names = c(
+      "Clarity", "Frequency", "0%", "20%",
+      "40%", "Median", "60%", "80%",
+      "100%", "Mean", "SD"
+    ),
+    booktabs = TRUE
+  )
+```
+Analyzing this table somethings we takeaway are the way the diamond width varies on all the different clarity levels. The l1 diamonds have the highest mean width(6.71mm) similar to the diamond length table. The VVS1 diamonds have the lowest mean width similar to the diamonds length table (4.98mm). Something that sticks in this table is the SI2 has a large max width  as opposed to its mean(58.90 mm). There might be some extreme observation in that area. Analyzing these differences help us understand the table.
+
+## Diamond depth based on clarity
+This third table basically displays the descriptive statistics for the diamond depth in millimeters. It displays for all the clarity levels and we use the same data set as the previous tables for consistency.
+```{r}
+
+#| label: tbl-diamond-depth
+#| tbl-cap: "Descriptive Statistics of Diamond Depth by Clarity"
+#| echo: false
+
+# Calculate depth statistics by clarity ----
+depthStats <- newDiamonds |>
+  group_by(clarity) |>
+  summarise(
+    Frequency = length(z),
+    Min = min(z),
+    Quintile1 = quantile(z, 0.20),
+    Quintile2 = quantile(z, 0.40),
+    Median = median(z),
+    Quintile3 = quantile(z, 0.60),
+    Quintile4 = quantile(z, 0.80),
+    Max = max(z),
+    Mean = mean(z),
+    SD = sd(z),
+    .groups = "drop"
+  )
+
+# Display formatted depth statistics table ----
+depthStats |>
+  kable(
+    digits = 2,
+    col.names = c(
+      "Clarity", "Frequency", "0%", "20%",
+      "40%", "Median", "60%", "80%",
+      "100%", "Mean", "SD"
+    ),
+    booktabs = TRUE
+  )
+
+```
+Analyzing the table we notice first that the avg diamond depth varies across the different clarity levels. Once again the l1 diamonds have the highest mean in depth(4.23mm) and the VVS1 diamonds once again have the lowest mean but in depth this time. The IF diamonds also have the lowest meanest depth tying with the VVS1 diamonds (3.06mm).The standard deviation's small range indicates that there is a tight variation in diamond depth on all the clarity levels. I also noticed that the VS1 diamonds have a very high max depth of 31.80 as opposed to its median. This leads us to believe there is a possible outlier in the distributions. This shows us why it is important to compare our results so we can interpret the data.
+# Big 10 Academic Alliance love data week
+
+This area basically analyzes the scoring statistics of all the NCAA woman's basketball teams during the 2024-25 season. Then we use these scoring statistics to examine the scoring performances. We use the team box data set containing the average points scored each game for each team. We then selected the top 10 teams with the highest averages in scoring and placed them on a horizontal bar chart for comparing.
+
+```{r}
+
+#| label: fig-btaa
+#| fig-cap: "Top 10 NCAA Women's Basketball Teams by Average Points per Game, 2024–25 Season"
+#| fig-alt: "Horizontal bar chart comparing the average points scored per game by the ten highest-ranked NCAA women's basketball teams in the 2024–25 season. Teams are ordered by average points."
+#| echo: false
+#| fig-width: 8
+#| fig-height: 5
+
+# Load NCAA women's basketball data ----
+team_box <- read_csv("team_box.csv")
+
+# Filter for the 2024-25 season ----
+season_data <- filter(team_box, season == 2025)
+
+# Calculate average points by team ----
+team_averages <- season_data |>
+  group_by(team_display_name) |>
+  summarise(
+    avg_points = mean(team_score, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# Rank teams by average points ----
+ranked_teams <- arrange(team_averages, -avg_points)
+
+# Select the top 10 teams ----
+top_10_teams <- slice_head(ranked_teams, n = 10)
+
+# Create the visualization ----
+ggplot(
+  top_10_teams,
+  aes(
+    x = avg_points,
+    y = reorder(team_display_name, avg_points)
+  )
+) +
+  geom_col(fill = "#4682B4") +
+  labs(
+    title = "Top 10 NCAA Women's Basketball Teams",
+    subtitle = "Average Points per Game, 2024-25 Season",
+    x = "Average Points per Game",
+    y = "Team"
+  ) +
+  theme_minimal()
+
+```
+Analyzing this chart first thing I notice is that Murray state has the highest avg points per game in the 2024 to 2025 season. The Tennesse and Florida teams are close to Murray state as well and USC had the lowest average point scoring in the top 10 teams.Something to notice is how small the difference is in the bars on this char indicating that these top 10 teams were all competitive and there wasn't any team dominating.
+
+# Monte carlo integrations
+
+The Monta carlo basically calculates the area under a given function by generating random coordinates within a region and determining if they are above or below the curve. We estimate on the interval -4 to 4 and we have three simulations for 100, 1000 and 10000. We compare the points generated to estimate the area
+
+```{r}
+
+#| label: fig-monte-carlo
+#| fig-cap: "Monte Carlo Numerical Integration Using Different Sample Sizes"
+#| fig-alt: "Three-panel scatterplot showing Monte Carlo integration of the standard normal density curve using 100, 1,000, and 10,000 random points. Points are colored according to whether they fall below or above the curve. The panels show increasingly dense samples."
+#| echo: false
+#| fig-width: 9
+#| fig-height: 4
+
+# Function to generate random coordinates ----
+Monte_carlo <- function(n, xmin, ymin, xmax, ymax) {
+  coordinates <- data.frame(
+    x = runif(n, xmin, xmax),
+    y = runif(n, ymin, ymax)
+  )
+  return(coordinates)
+}
+
+# Set seed for reproducibility ----
+set.seed(184)
+
+# Generate three different sample sizes ----
+coordinates100 <- Monte_carlo(100, -4, 0, 4, 0.4)
+coordinates1000 <- Monte_carlo(1000, -4, 0, 4, 0.4)
+coordinates10000 <- Monte_carlo(10000, -4, 0, 4, 0.4)
+
+# Combine the samples ----
+coordinates100$Sample <- "100 Points"
+coordinates1000$Sample <- "1,000 Points"
+coordinates10000$Sample <- "10,000 Points"
+
+allCoordinates <- bind_rows(
+  coordinates100,
+  coordinates1000,
+  coordinates10000
+)
+
+# Classify points above and below the curve ----
+classified <- mutate(
+  allCoordinates,
+  Below = y <= dnorm(x)
+)
+
+# Calculate area estimates by sample size ----
+area_estimates <- classified |>
+  group_by(Sample) |>
+  summarise(
+    Estimate = mean(Below) * 3.2,
+    .groups = "drop"
+  )
+
+# Create small-multiple visualization ----
+ggplot(classified, aes(x = x, y = y)) +
+  geom_point(aes(color = Below), size = 0.5, alpha = 0.6) +
+  stat_function(
+    fun = dnorm,
+    args = list(mean = 0, sd = 1)
+  ) +
+  facet_wrap(~Sample, nrow = 1) +
+  labs(
+    title = "Monte Carlo Numerical Integration",
+    subtitle = "Comparing Different Numbers of Random Points",
+    x = "X",
+    y = "Y",
+    color = "Below Curve"
+  ) +
+  theme_minimal()
+
+
+```
+
+```{r}
+#| label: tbl-monte-carlo-estimates
+#| tbl-cap: "Monte Carlo Area Estimates by Sample Size"
+#| echo: false
+
+area_estimates |>
+  kable(
+    digits = 4,
+    col.names = c("Sample Size", "Estimated Area"),
+    booktabs = TRUE
+  )
+```
+
+Analyzing the graphs we can see how the sample sizing can affect the monte carlo integration. I noticed with the 100 sample size the points are more spaced out which makes the area less accurate and more sensitive. For 1000 points the points become less spaced out more dense make he area more accurate and stable. For 10000 points the area under the curve is clear due to the amount of points there are. So we can say increasing the sample size makes the monte carlo estimates more accurate.
+
+# Planning/ prompts Gen AI tools
+## Plan-informed Response
+## My Plan
+Goal:
+The goal for this analysis is analyze the ulnar calcium measurements and see how they change over time for women specifically. Women receiving a diet.
+Needs:
+- calcium.csv file
+- measurments of 31 women
+- Rstudio
+- tidyverse
+
+Steps:
+1. start by importing the csv file examining it.
+2. we organize the dataset by seperating the first 4 columns and formatting it better
+3. we tidy the dataset using pivot_longer function. create new columns.
+4. Summarize the measurements: calculate the measurement statistics.
+5. Making a data visualization using ggplot()
+6. Compare the results and seet rends etc.
+## ChatGPT Plan Informed Response
+I gave the open AI ChatGPT the calcium.csv file data set and my detailed plan for organizing my data and making my data visualization. Plan was focused on fixing the organization of the 31 women to a clean format. Also planning on creating a graph to compare the groups. ChatGPT gave me R code for reshaping the data by using the pivot_longer() function, finding the group averages, and making a line graph with the ggplot() function. The visualization created compares the average ulnar calcium values for all four measurement times for two groups.
+```{r}
+#| label: fig-calcium-plan
+#| fig-cap: "Average Ulnar Calcium Measurements Across Time by Treatment Group"
+#| fig-alt: "Line graph comparing mean ulnar calcium measurements for the no-treatment and diet/exercise groups across four measurement times."
+#| echo: false
+#| warning: false
+#| message: false
+library(tidyverse)
+
+# Import the original data ----
+calcium <- read_csv("calcium.csv")
+
+# Separate the two treatment groups ----
+no_treatment <- calcium |>
+  select(1:4) |>
+  mutate(
+    Participant = row_number(),
+    Treatment = "No Treatment"
+  )
+
+diet_exercise <- calcium |>
+  select(5:8) |>
+  setNames(c("y0", "y1", "y2", "y3")) |>
+  mutate(
+    Participant = row_number(),
+    Treatment = "Diet and Exercise"
+  )
+
+# Combine both groups ----
+calcium_combined <- bind_rows(
+  no_treatment,
+  diet_exercise
+)
+
+# Reshape to tidy format ----
+calcium_tidy <- calcium_combined |>
+  pivot_longer(
+    cols = c(y0, y1, y2, y3),
+    names_to = "Year",
+    values_to = "Calcium"
+  ) |>
+  filter(!is.na(Calcium)) |>
+  mutate(
+    Year = as.numeric(sub("y", "", Year))
+  )
+
+# Summarize mean calcium by treatment and year ----
+calcium_summary <- calcium_tidy |>
+  group_by(Treatment, Year) |>
+  summarise(
+    Mean_Calcium = mean(Calcium),
+    .groups = "drop"
+  )
+
+# Create the visualization ----
+ggplot(
+  calcium_summary,
+  aes(
+    x = Year,
+    y = Mean_Calcium,
+    color = Treatment,
+    group = Treatment
+  )
+) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 3) +
+  scale_x_continuous(breaks = 0:3) +
+  labs(
+    title = "Average Ulnar Calcium Over Time",
+    subtitle = "Comparison of Treatment Groups",
+    x = "Measurement Year",
+    y = "Mean Ulnar Calcium",
+    color = "Treatment Group"
+  ) +
+  theme_minimal()
+
+```
+## Chat GPT response generic
+
+
+
+# GenAI usage appendix
+Generating ALt text and Long descritions:
+I used chatgpt to assist  generating alt text for all my data visualizations. Purpose to make the visualizations understandable
+
+Used it for my planning and prompting tool by uploading the calcium.csv and providing a plan for all the data wrangling.
+
+Prompt:Follow my plan to organize the calcium measurements  ChatGPT response: ChatGPT generated R code to use tidyverse functions to reshape the dataset that would help me create the visualization. Visualization compared the excercise group with the no treatmen groups. It also gave an interpretation of the data visualization.
+
+
+
+# Reflection
+
+Reflection: Chat gpt  gave clear instruction and helped me understand the data better for generating visualizations.
+# Code appendix
+
+## Diamonds code
+
+```{r}
+
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+data(diamonds)
+
+# Remove diamonds with zero physical dimensions ----
+newDiamonds <- diamonds |>
+  filter(x != 0, y != 0, z != 0) |>
+  select(clarity, x, y, z)
+
+# Calculate length statistics by clarity ----
+lengthStats <- newDiamonds |>
+  group_by(clarity) |>
+  summarise(
+    Frequency = length(x),
+    Min = min(x),
+    Q1 = quantile(x, 0.20),
+    Q2 = quantile(x, 0.40),
+    Median = median(x),
+    Q3 = quantile(x, 0.60),
+    Q4 = quantile(x, 0.80),
+    Max = max(x),
+    Mean = mean(x),
+    SD = sd(x),
+    .groups = "drop"
+  )
+
+# Display formatted statistics table ----
+lengthStats |>
+  kable(
+    digits = 2,
+    col.names = c(
+      "Clarity", "Frequency", "0%", "20%",
+      "40%", "Median", "60%", "80%",
+      "100%", "Mean", "SD"
+    ),
+    booktabs = TRUE
+  )
+
+```
+
+## Big 10 Alliance
+
+
+```{r}
+
+team_box <- read_csv("team_box.csv")
+
+# Filter for the 2024-25 season ----
+season_data <- filter(team_box, season == 2025)
+
+# Calculate average points by team ----
+team_averages <- season_data |>
+  group_by(team_display_name) |>
+  summarise(
+    avg_points = mean(team_score, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# Rank teams by average points ----
+ranked_teams <- arrange(team_averages, -avg_points)
+
+# Select the top 10 teams ----
+top_10_teams <- slice_head(ranked_teams, n = 10)
+
+# Create the visualization ----
+ggplot(
+  top_10_teams,
+  aes(
+    x = avg_points,
+    y = reorder(team_display_name, avg_points)
+  )
+) +
+  geom_col(fill = "#4682B4") +
+  labs(
+    title = "Top 10 NCAA Women's Basketball Teams",
+    subtitle = "Average Points per Game, 2024-25 Season",
+    x = "Average Points per Game",
+    y = "Team"
+  ) +
+  theme_minimal()
+
+```
+## Monte carlo
+
+```{r}
+
+Monte_carlo <- function(n, xmin, ymin, xmax, ymax) {
+  coordinates <- data.frame(
+    x = runif(n, xmin, xmax),
+    y = runif(n, ymin, ymax)
+  )
+  return(coordinates)
+}
+
+# Set seed for reproducibility ----
+set.seed(184)
+
+# Generate three different sample sizes ----
+coordinates100 <- Monte_carlo(100, -4, 0, 4, 0.4)
+coordinates1000 <- Monte_carlo(1000, -4, 0, 4, 0.4)
+coordinates10000 <- Monte_carlo(10000, -4, 0, 4, 0.4)
+
+# Combine the samples ----
+coordinates100$Sample <- "100 Points"
+coordinates1000$Sample <- "1,000 Points"
+coordinates10000$Sample <- "10,000 Points"
+
+allCoordinates <- bind_rows(
+  coordinates100,
+  coordinates1000,
+  coordinates10000
+)
+
+# Classify points above and below the curve ----
+classified <- mutate(
+  allCoordinates,
+  Below = y <= dnorm(x)
+)
+
+# Calculate area estimates by sample size ----
+area_estimates <- classified |>
+  group_by(Sample) |>
+  summarise(
+    Estimate = mean(Below) * 3.2,
+    .groups = "drop"
+  )
+
+# Create small-multiple visualization ----
+ggplot(classified, aes(x = x, y = y)) +
+  geom_point(aes(color = Below), size = 0.5, alpha = 0.6) +
+  stat_function(
+    fun = dnorm,
+    args = list(mean = 0, sd = 1)
+  ) +
+  facet_wrap(~Sample, nrow = 1) +
+  labs(
+    title = "Monte Carlo Numerical Integration",
+    subtitle = "Comparing Different Numbers of Random Points",
+    x = "X",
+    y = "Y",
+    color = "Below Curve"
+  ) +
+  theme_minimal()
+
+```
+
+## Calcium
+```{r}
+
+library(tidyverse)
+
+# Import the original data ----
+calcium <- read_csv("calcium.csv")
+
+# Separate the two treatment groups ----
+no_treatment <- calcium |>
+  select(1:4) |>
+  mutate(
+    Participant = row_number(),
+    Treatment = "No Treatment"
+  )
+
+diet_exercise <- calcium |>
+  select(5:8) |>
+  setNames(c("y0", "y1", "y2", "y3")) |>
+  mutate(
+    Participant = row_number(),
+    Treatment = "Diet and Exercise"
+  )
+
+# Combine both groups ----
+calcium_combined <- bind_rows(
+  no_treatment,
+  diet_exercise
+)
+
+# Reshape to tidy format ----
+calcium_tidy <- calcium_combined |>
+  pivot_longer(
+    cols = c(y0, y1, y2, y3),
+    names_to = "Year",
+    values_to = "Calcium"
+  ) |>
+  filter(!is.na(Calcium)) |>
+  mutate(
+    Year = as.numeric(sub("y", "", Year))
+  )
+
+# Summarize mean calcium by treatment and year ----
+calcium_summary <- calcium_tidy |>
+  group_by(Treatment, Year) |>
+  summarise(
+    Mean_Calcium = mean(Calcium),
+    .groups = "drop"
+  )
+
+# Create the visualization ----
+ggplot(
+  calcium_summary,
+  aes(
+    x = Year,
+    y = Mean_Calcium,
+    color = Treatment,
+    group = Treatment
+  )
+) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 3) +
+  scale_x_continuous(breaks = 0:3) +
+  labs(
+    title = "Average Ulnar Calcium Over Time",
+    subtitle = "Comparison of Treatment Groups",
+    x = "Measurement Year",
+    y = "Mean Ulnar Calcium",
+    color = "Treatment Group"
+  ) +
+  theme_minimal()
+
+```
+
+
+
